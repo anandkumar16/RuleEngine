@@ -57,20 +57,21 @@ These dependencies are listed in the `requirements.txt` file.
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/repository-name.git
-   cd repository-name
+   git clone https://github.com/anandkumar16/RuleEngine.git
+   cd rule_engine_ast
 
 2. **Set up the Virtual Environment:**
     ```bash
    python -m venv venv
-
-3.**Activate the Virtual Environment:**
-
-.\venv\Scripts\activate
-
- ***On macOS/Linux***
-   
- source venv/bin/activate
+    
+3. **Activate the Virtual Environment:**
+    ```bash
+   .\venv\Scripts\activate
+    
+3. ***On macOS/Linux***
+    ```bash
+   source venv/bin/activate
+ 
 
 4. **Set up MongoDB:**
 
@@ -100,8 +101,9 @@ Start MongoDB: If MongoDB is running locally, start the MongoDB service.
 Run the Flask Application:
 Once MongoDB is running, you can start the Flask app by running:
 
+    ```bash
+    python app.py
 
-python app.py
 
 Access the Application: Open a browser and navigate to:
 
