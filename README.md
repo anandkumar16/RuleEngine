@@ -14,8 +14,6 @@ This is a Flask-based Rule Engine application that allows users to create, combi
 - [Running the Application](#running-the-application)
   - [Running Locally](#running-locally)
   - [Running with Docker](#running-with-docker)
-- [API Endpoints](#api-endpoints)
-- [License](#license)
 
 ## Overview
 
@@ -73,42 +71,47 @@ These dependencies are listed in the `requirements.txt` file.
  ***On macOS/Linux***
  source venv/bin/activate
 
-**Set up MongoDB:**
+4. **Set up MongoDB:**
 
 Option 1: Install MongoDB locally (follow the official MongoDB Installation Guide).
 Option 2: Use Docker (see Docker instructions below).
 
-**Using Docker**
+   **Using Docker**
 
 Install Docker & Docker Compose:
 
 Follow the official installation instructions for Docker and Docker Compose.
-Build and Run Containers: Run the following command to build and start both MongoDB and the Flask app:
+Build and Run Containers: 
+Run the following command to build and start both MongoDB and the Flask app:
 
 docker-compose up --build
 
-Start a MongoDB container.
+5. ***Start a MongoDB container***
 Set up networking between the Flask app and MongoDB.
 Access the Application: Once the containers are up, the Flask application will be available at:
 
 http://localhost:5000
 
-Running the Application
+6.***Running the Application***
 Running Locally
 Start MongoDB: If MongoDB is running locally, start the MongoDB service.
 
-Run the Flask Application: Once MongoDB is running, you can start the Flask app by running:
+Run the Flask Application:
+Once MongoDB is running, you can start the Flask app by running:
 
 python app.py
 Access the Application: Open a browser and navigate to:
 
-http://127.0.0.1:5000
+http://localhost:5000
 Running with Docker
-Start with Docker Compose: Run the following command to start both the MongoDB and Flask containers:
+Start with Docker Compose:
+Run the following command to start both the MongoDB and Flask containers:
 
-
+```bash 
 docker-compose up --build
-Access the Application: Open a browser and navigate to:
 
+7.**Access the Application: Open a browser and navigate to**
+
+```bash
 http://localhost:5000
 
