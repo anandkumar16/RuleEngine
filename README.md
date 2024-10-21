@@ -69,6 +69,7 @@ These dependencies are listed in the `requirements.txt` file.
 .\venv\Scripts\activate
 
  ***On macOS/Linux***
+   
  source venv/bin/activate
 
 4. **Set up MongoDB:**
@@ -99,15 +100,18 @@ Start MongoDB: If MongoDB is running locally, start the MongoDB service.
 Run the Flask Application:
 Once MongoDB is running, you can start the Flask app by running:
 
+
 python app.py
+
 Access the Application: Open a browser and navigate to:
 
 http://localhost:5000
+
 Running with Docker
 Start with Docker Compose:
 Run the following command to start both the MongoDB and Flask containers:
 
-```bash 
+
 docker-compose up --build
 
 7.**Access the Application: Open a browser and navigate to**
