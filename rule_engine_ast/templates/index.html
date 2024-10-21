@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Engine Interface</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Rule Engine Interface</h1>
+            <p class="text-gray-600">Create, combine, and evaluate business rules</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column - Rule Creation -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">Create Rule</h2>
+                
+                <!-- Rule Input -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rule Definition</label>
+                    <div id="ruleEditor" class="h-32 border border-gray-300 rounded mb-2"></div>
+                    <p class="text-sm text-gray-500">Example: (age > 30 AND department = 'Sales') OR (salary > 50000)</p>
+                </div>
+
+                <button onclick="createRule()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Create Rule
+                </button>
+
+                <!-- Rule List -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-3">Created Rules</h3>
+                    <div id="ruleList" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Right Column - Rule Evaluation -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">Evaluate Rules</h2>
+
+                <!-- User Data Input -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">User Data (JSON)</label>
+                    <div id="userDataEditor" class="h-32 border border-gray-300 rounded mb-2"></div>
+                    <p class="text-sm text-gray-500">Example: {"age": 35, "department": "Sales", "salary": 60000}</p>
+                </div>
+
+                <!-- Rule Selection -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Rules to Combine</label>
+                    <div id="ruleSelection" class="space-y-2 mb-4 p-2 border border-gray-200 rounded max-h-40 overflow-y-auto">
+                    </div>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button onclick="combineAndEvaluate()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Combine & Evaluate
+                    </button>
+                    <button onclick="clearSelection()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                        Clear Selection
+                    </button>
+                </div>
+
+                <!-- Results -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-3">Evaluation Results</h3>
+                    <div id="evaluationResult" class="p-4 border border-gray-200 rounded min-h-[100px]">
+                        No evaluation results yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Ace editors
+        const ruleEditor = ace.edit("ruleEditor");
+        ruleEditor.setTheme("ace/theme/monokai");
+        ruleEditor.session.setMode("ace/mode/text");
+
+        const userDataEditor = ace.edit("userDataEditor");
+        userDataEditor.setTheme("ace/theme/monokai");
+        userDataEditor.session.setMode("ace/mode/json");
+        userDataEditor.setValue('{\n    "age": 35,\n    "department": "Sales",\n    "salary": 60000,\n    "experience": 3\n}', -1);
+
+        // Store created rules
+        let createdRules = [];
+
+        async function createRule() {
+            try {
+                const ruleString = ruleEditor.getValue().trim();
+                if (!ruleString) {
+                    alert('Rule cannot be empty!');
+                    return;
+                }
+
+                const response = await fetch('/create_rule', {  // Ensure your backend is running locally
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ rule: ruleString })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    createdRules.push({
+                        id: data.rule_id,
+                        rule: ruleString
+                    });
+                    updateRuleLists();
+                    ruleEditor.setValue('');  // Clear the rule editor after successful creation
+                } else {
+                    alert('Error creating rule: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error creating rule: ' + error.message);
+            }
+        }
+
+        function updateRuleLists() {
+            // Update rule list
+            const ruleList = document.getElementById('ruleList');
+            ruleList.innerHTML = createdRules.map(rule => `
+                <div class="p-2 border border-gray-200 rounded">
+                    <p class="text-sm font-mono">${rule.rule}</p>
+                    <p class="text-xs text-gray-500">ID: ${rule.id}</p>
+                </div>
+            `).join('');
+
+            // Update rule selection
+            const ruleSelection = document.getElementById('ruleSelection');
+            ruleSelection.innerHTML = createdRules.map(rule => `
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="rule_${rule.id}" value="${rule.id}" class="rule-checkbox">
+                    <label for="rule_${rule.id}" class="text-sm">${rule.rule}</label>
+                </div>
+            `).join('');
+        }
+
+        async function combineAndEvaluate() {
+            try {
+                // Get selected rule IDs
+                const selectedRules = Array.from(document.querySelectorAll('.rule-checkbox:checked'))
+                    .map(checkbox => checkbox.value);
+
+                if (selectedRules.length === 0) {
+                    alert('Please select at least one rule to evaluate');
+                    return;
+                }
+
+                // First combine rules
+                const combineResponse = await fetch('/combine_rules', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ rule_ids: selectedRules })
+                });
+
+                const combineData = await combineResponse.json();
+                if (!combineResponse.ok) {
+                    throw new Error(combineData.error);
+                }
+
+                // Then evaluate the combined rule
+                const userData = JSON.parse(userDataEditor.getValue());
+                const evaluateResponse = await fetch('/evaluate_rule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        rule_id: combineData.combined_rule_id,
+                        user_data: userData
+                    })
+                });
+
+                const evaluateData = await evaluateResponse.json();
+                if (!evaluateResponse.ok) {
+                    throw new Error(evaluateData.error);
+                }
+
+                // Display results
+                const resultDiv = document.getElementById('evaluationResult');
+                resultDiv.innerHTML = `
+                    <div class="space-y-2">
+                        <p class="font-medium">Result: <span class="${evaluateData.result ? 'text-green-600' : 'text-red-600'}">${evaluateData.result}</span></p>
+                        <p class="text-sm text-gray-600">Combined Rule ID: ${evaluateData.rule_id}</p>
+                        <div class="mt-2">
+                            <p class="text-sm font-medium">Evaluated User Data:</p>
+                            <pre class="text-xs bg-gray-50 p-2 rounded mt-1">${JSON.stringify(evaluateData.user_data, null, 2)}</pre>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                alert('Error evaluating rules: ' + error.message);
+            }
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.rule-checkbox').forEach(checkbox => checkbox.checked = false);
+            document.getElementById('evaluationResult').innerHTML = 'No evaluation results yet';
+        }
+    </script>
+</body>
+</html>
